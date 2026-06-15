@@ -30,10 +30,15 @@
               },
               {
                 "glob": "**/*.svg",
-                "input": "node_modules/@siemens/ix-icons/svg",
+                "input": "node_modules/@siemens/element-icons/svg",
                 "output": "./svg"
               }
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "node_modules/"
+              ]
+            },
             "styles": [
               "src/styles.scss"
             ]

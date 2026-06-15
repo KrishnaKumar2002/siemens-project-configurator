@@ -1,52 +1,19 @@
-/* Global styles — Siemens Project Configurator */
-@import '@siemens/ix/dist/siemens-ix/siemens-ix.css';
+@use "@siemens/element-theme/src/theme";
+@use "@siemens/element-ng/element-ng";
 
-/* Modern system font stack + monospace */
+html,
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: var(--theme-color-1, #0f161d);
-  color: var(--theme-color-std-text, #ffffff);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+  background: var(--si-background-page, #101820);
+  color: var(--si-text-primary, #f5f7fa);
+  font-family: var(--si-font-family, Inter, "Segoe UI", Roboto, Arial, sans-serif);
 }
 
-/* ── Layout utilities ── */
-.d-flex               { display: flex !important; }
-.flex-column          { flex-direction: column !important; }
-.align-items-center   { align-items: center !important; }
-.align-items-start    { align-items: flex-start !important; }
-.justify-content-end  { justify-content: flex-end !important; }
-.justify-content-between { justify-content: space-between !important; }
-.gap-2                { gap: 8px !important; }
-.gap-3                { gap: 12px !important; }
-.gap-4                { gap: 16px !important; }
+* {
+  box-sizing: border-box;
+}
 
-/* ── Spacing ── */
-.mb-1 { margin-bottom: 4px !important; }
-.mb-2 { margin-bottom: 8px !important; }
-.mb-3 { margin-bottom: 12px !important; }
-.mb-4 { margin-bottom: 16px !important; }
-.mb-5 { margin-bottom: 24px !important; }
-.mt-2 { margin-top: 8px !important; }
-.mt-4 { margin-top: 16px !important; }
-.ms-1 { margin-left: 4px !important; }
-.ms-2 { margin-left: 8px !important; }
-.p-3  { padding: 12px !important; }
-.p-4  { padding: 16px !important; }
-.py-5 { padding-top: 40px !important; padding-bottom: 40px !important; }
-
-/* ── Text colors ── */
-.text-muted   { color: var(--theme-color-soft-text, rgba(255,255,255,0.55)) !important; }
-.text-primary { color: var(--theme-color-primary, #0064b4) !important; }
-.text-info    { color: var(--theme-color-info, #007a91) !important; }
-.text-success { color: var(--theme-color-success, #25a15a) !important; }
-.text-warning { color: var(--theme-color-warning, #e68a00) !important; }
-.text-danger  { color: var(--theme-color-alarm, #e04c4c) !important; }
-.text-center  { text-align: center !important; }
-
-/* ── Responsive display ── */
-.d-none { display: none !important; }
-@media (min-width: 576px) {
-  .d-sm-inline { display: inline !important; }
+body {
+  overflow-x: hidden;
 }
