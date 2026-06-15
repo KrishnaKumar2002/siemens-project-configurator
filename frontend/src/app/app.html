@@ -1,343 +1,82 @@
-<ix-application [theme]="'classic'" [colorSchema]="activeTheme()">
+<si-application-header>
+  <si-header-brand>
+    <a siHeaderLogo routerLink="/"></a>
+    <h1 class="application-name">Siemens Project Configurator</h1>
+  </si-header-brand>
+  <si-header-actions>
+    <button si-header-account-item type="button" name="Element" [siHeaderDropdownTriggerFor]="account">
+      Element
+    </button>
+  </si-header-actions>
+</si-application-header>
 
-  <!-- ─── Side Navigation ─── -->
-  <ix-menu>
-    <ix-menu-item icon="analysis" label="Console Dashboard" [active]="true"></ix-menu-item>
-    <ix-menu-item icon="project-configuration" label="Deployment Configs"></ix-menu-item>
-    <ix-menu-item icon="alarm-bell" label="Notifications"></ix-menu-item>
-    <ix-menu-item icon="project-settings" label="Global Settings"></ix-menu-item>
-    <ix-menu-item slot="bottom" icon="about" label="v1.0.0"></ix-menu-item>
-  </ix-menu>
-
-  <!-- ─── Application Header ─── -->
-  <ix-application-header name="Siemens Project Configurator">
-    <div slot="logo" class="logo-wrap">
-      <span class="siemens-badge">SIEMENS</span>
-      <span class="app-subtitle">Smart Infrastructure Portal</span>
+<ng-template #account>
+  <si-header-dropdown>
+    <div>
+      <strong>Siemens Element</strong>
+      <div>design-system@siemens.com</div>
     </div>
-    <div class="header-right">
-      <!-- Live timestamp -->
-      <div class="live-clock">
-        <ix-icon name="connection-success" size="16" class="live-icon"></ix-icon>
-        <span class="clock-text">{{ currentTime }}</span>
-      </div>
-      <!-- Theme toggle -->
-      <ix-button ghost (click)="toggleTheme()" class="theme-btn">
-        <ix-icon [name]="activeTheme() === 'dark' ? 'bulb-filled' : 'bulb'" size="16"></ix-icon>
-        <span>{{ activeTheme() === 'dark' ? 'Light Mode' : 'Dark Mode' }}</span>
-      </ix-button>
+    <button si-header-dropdown-item type="button" [icon]="icons.elementUser">Profile</button>
+  </si-header-dropdown>
+</ng-template>
+
+<si-dashboard [heading]="'Project cockpit'" [enableExpandInteractions]="true">
+  <si-menu slot="menu">
+    <si-menu-item [icon]="icons.elementDashboard" label="Dashboard"></si-menu-item>
+    <si-menu-item [icon]="icons.elementProject" label="Projects"></si-menu-item>
+    <si-menu-item [icon]="icons.elementAlarm" label="Alerts" [badge]="3"></si-menu-item>
+    <si-menu-item [icon]="icons.elementSettings" label="Settings"></si-menu-item>
+  </si-menu>
+
+  <si-dashboard-card [title]="'Configuration status'">
+    <div class="metric">{{ submittedData ? 'Ready' : 'Pending' }}</div>
+  </si-dashboard-card>
+
+  <si-dashboard-card [title]="'Environment'">
+    <div class="metric">{{ currentTime }}</div>
+  </si-dashboard-card>
+
+  <si-dashboard-card [title]="'Project'">
+    <div class="metric">{{ formData.clientName || 'No client selected' }}</div>
+  </si-dashboard-card>
+
+  <si-dashboard-card [title]="'Deploy'">
+    <div class="metric">{{ submittedData ? 'Generated' : 'Waiting' }}</div>
+  </si-dashboard-card>
+
+  <si-card>
+    <si-card-header>
+      <h2>Project identification</h2>
+    </si-card-header>
+    <div class="form-stack">
+      <si-pills-input [(ngModel)]="clientNamePills" name="clientName" placeholder="Client name"></si-pills-input>
+      <si-pills-input [(ngModel)]="projectNamePills" name="projectName" placeholder="Project name"></si-pills-input>
+      <si-pills-input [(ngModel)]="commissionerEmailPills" name="commissionerEmail" placeholder="Commissioner email" siPillsInputEmail></si-pills-input>
     </div>
-  </ix-application-header>
+  </si-card>
 
-  <!-- ─── Main Content ─── -->
-  <ix-content>
-    <div class="page-shell">
-
-      <!-- Page heading row -->
-      <div class="page-heading-row">
-        <div class="page-heading-left">
-          <div class="page-breadcrumb">
-            <ix-icon name="projects" size="16"></ix-icon>
-            <span>Projects</span>
-            <span class="bc-sep">/</span>
-            <span class="bc-active">Configuration Console</span>
-          </div>
-          <h1 class="page-h1">Project Settings Console</h1>
-          <p class="page-subhead">Configure and deploy your Siemens Smart Infrastructure project</p>
-        </div>
-        <div class="page-heading-right">
-          <div class="env-chip" [class.env-chip--valid]="configForm?.form?.valid">
-            <span class="env-dot"></span>
-            <span>{{ configForm?.form?.valid ? 'CONFIG VALID' : 'CONFIG INCOMPLETE' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ─── KPI Status Strip ─── -->
-      <div class="kpi-strip">
-        <!-- Config Status -->
-        <div class="kpi-tile" [class.kpi-tile--green]="configForm?.form?.valid" [class.kpi-tile--red]="!configForm?.form?.valid">
-          <div class="kpi-icon-wrap kpi-icon--status">
-            <ix-icon [name]="configForm?.form?.valid ? 'success-filled' : 'error-filled'" size="24"></ix-icon>
-          </div>
-          <div class="kpi-text">
-            <span class="kpi-label">Configuration</span>
-            <span class="kpi-value" [class.kv-green]="configForm?.form?.valid" [class.kv-red]="!configForm?.form?.valid">
-              {{ configForm?.form?.valid ? 'Valid' : 'Incomplete' }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Cluster Status -->
-        <div class="kpi-tile kpi-tile--blue">
-          <div class="kpi-icon-wrap kpi-icon--cluster">
-            <ix-icon name="connection-success" size="24"></ix-icon>
-          </div>
-          <div class="kpi-text">
-            <span class="kpi-label">Cluster</span>
-            <span class="kpi-value kv-blue">Connected</span>
-          </div>
-          <div class="live-pulse"></div>
-        </div>
-
-        <!-- Target Environment -->
-        <div class="kpi-tile kpi-tile--teal">
-          <div class="kpi-icon-wrap kpi-icon--env">
-            <ix-icon name="cloud" size="24"></ix-icon>
-          </div>
-          <div class="kpi-text">
-            <span class="kpi-label">Environment</span>
-            <span class="kpi-value kv-teal">{{ formData.deploymentLocation || '—' }}</span>
-          </div>
-        </div>
-
-        <!-- Active Project -->
-        <div class="kpi-tile kpi-tile--amber">
-          <div class="kpi-icon-wrap kpi-icon--project">
-            <ix-icon name="projects" size="24"></ix-icon>
-          </div>
-          <div class="kpi-text">
-            <span class="kpi-label">Active Project</span>
-            <span class="kpi-value kv-amber">{{ formData.projectName || 'Unnamed' }}</span>
-          </div>
-        </div>
-
-        <!-- Deploy Progress indicator -->
-        <div class="kpi-tile kpi-tile--violet">
-          <div class="kpi-icon-wrap kpi-icon--deploy">
-            <ix-icon name="cloud-upload" size="24"></ix-icon>
-          </div>
-          <div class="kpi-text">
-            <span class="kpi-label">Ready To Deploy</span>
-            <span class="kpi-value kv-violet">{{ configForm?.form?.valid ? 'Yes' : 'No' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ─── Main two-column grid ─── -->
-      <form (ngSubmit)="onSubmit()" #configForm="ngForm" novalidate class="main-grid">
-
-        <!-- ══════ LEFT COLUMN — Form Cards ══════ -->
-        <div class="col-form">
-
-          <!-- Card 1: Project Identification -->
-          <div class="form-card">
-            <div class="card-accent card-accent--blue"></div>
-            <div class="card-inner">
-              <div class="card-head">
-                <div class="card-head-icon ci-blue">
-                  <ix-icon name="about" size="20"></ix-icon>
-                </div>
-                <div>
-                  <h2 class="card-title">Project Identification</h2>
-                  <p class="card-desc">Key identifier details of the client and project</p>
-                </div>
-              </div>
-
-              <div class="field-row">
-                <ix-input
-                  id="clientName"
-                  name="clientName"
-                  [(ngModel)]="formData.clientName"
-                  required
-                  label="Name of the client *"
-                  placeholder="e.g. Siemens AG, Accenture GmbH">
-                </ix-input>
-                <ix-helper-text htmlFor="clientName" invalidText="Client name is required."></ix-helper-text>
-              </div>
-
-              <div class="field-row">
-                <ix-input
-                  id="projectName"
-                  name="projectName"
-                  [(ngModel)]="formData.projectName"
-                  required
-                  label="Name of the project *"
-                  placeholder="e.g. MindSphere Portal V5">
-                </ix-input>
-                <ix-helper-text htmlFor="projectName" invalidText="Project name is required."></ix-helper-text>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 2: Connectivity & Deployment -->
-          <div class="form-card">
-            <div class="card-accent card-accent--teal"></div>
-            <div class="card-inner">
-              <div class="card-head">
-                <div class="card-head-icon ci-teal">
-                  <ix-icon name="project-configuration" size="20"></ix-icon>
-                </div>
-                <div>
-                  <h2 class="card-title">Connectivity & Deployment</h2>
-                  <p class="card-desc">Configure cloud deployment locations and connectivity overrides</p>
-                </div>
-              </div>
-
-              <div class="field-row">
-                <ix-select
-                  id="deploymentLocation"
-                  name="deploymentLocation"
-                  [(ngModel)]="formData.deploymentLocation"
-                  required
-                  label="Deployment location *"
-                  placeholder="Select a region…">
-                  <ix-select-item label="🌍  crsp-emea — Europe, Middle East & Africa (Production)" value="crsp-emea"></ix-select-item>
-                  <ix-select-item label="🌎  crsp-na — North America (Production)" value="crsp-na"></ix-select-item>
-                  <ix-select-item label="🌏  crsp-apac — Asia Pacific (Production)" value="crsp-apac"></ix-select-item>
-                  <ix-select-item label="🧪  crsp-release — Release Candidate (Testing)" value="crsp-release"></ix-select-item>
-                  <ix-select-item label="🖥️  local — Local Development Environment" value="local"></ix-select-item>
-                </ix-select>
-                <ix-helper-text htmlFor="deploymentLocation" invalidText="Deployment location is required."></ix-helper-text>
-              </div>
-
-              <div class="field-row">
-                <ix-select
-                  id="reconfigureConnectivity"
-                  name="reconfigureConnectivity"
-                  [(ngModel)]="formData.reconfigureConnectivity"
-                  required
-                  label="Re-configure connectivity details?">
-                  <ix-select-item label="No — Use standard deployment defaults" value="No"></ix-select-item>
-                  <ix-select-item label="Yes — Override connectivity (advanced)" value="Yes"></ix-select-item>
-                </ix-select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 3: Alerting & Communication -->
-          <div class="form-card">
-            <div class="card-accent card-accent--amber"></div>
-            <div class="card-inner">
-              <div class="card-head">
-                <div class="card-head-icon ci-amber">
-                  <ix-icon name="alarm-bell" size="20"></ix-icon>
-                </div>
-                <div>
-                  <h2 class="card-title">Alerting & Communication</h2>
-                  <p class="card-desc">Notification recipients for automated system alerts</p>
-                </div>
-              </div>
-
-              <div class="field-row">
-                <ix-input
-                  id="commissionerEmail"
-                  name="commissionerEmail"
-                  [(ngModel)]="formData.commissionerEmail"
-                  required
-                  email
-                  label="Commissioner email *"
-                  placeholder="commissioner@siemens.com"
-                  #commissionerEmailInput="ngModel">
-                </ix-input>
-                <ix-helper-text
-                  htmlFor="commissionerEmail"
-                  [invalidText]="commissionerEmailInput.errors?.['required'] ? 'Email is required.' : 'Enter a valid email address.'">
-                </ix-helper-text>
-              </div>
-
-              <div class="field-row">
-                <ix-input
-                  id="alertRecipientEmails"
-                  name="alertRecipientEmails"
-                  [(ngModel)]="formData.alertRecipientEmails"
-                  label="Alert recipient emails"
-                  placeholder="email1@example.com,email2@example.com">
-                </ix-input>
-                <ix-helper-text htmlFor="alertRecipientEmails" helperText="Comma-separated. Leave blank to disable alerts."></ix-helper-text>
-              </div>
-            </div>
-          </div>
-
-          <!-- Submit Button Row -->
-          <div class="action-row">
-            <ix-button type="button" variant="secondary" (click)="clearOutput()">
-              <ix-icon name="document" size="16"></ix-icon>
-              Reset Output
-            </ix-button>
-            <ix-button type="submit" [disabled]="!configForm.form.valid" class="submit-btn">
-              <ix-icon name="cloud-upload" size="16"></ix-icon>
-              Generate Configuration
-            </ix-button>
-          </div>
-        </div>
-
-        <!-- ══════ RIGHT COLUMN — Live Console Output ══════ -->
-        <div class="col-console">
-          <div class="console-card">
-            <!-- Console header -->
-            <div class="console-top">
-              <div class="terminal-traffic-lights">
-                <span class="tl tl-red"></span>
-                <span class="tl tl-yellow"></span>
-                <span class="tl tl-green"></span>
-              </div>
-              <div class="console-path">
-                <ix-icon name="document-filled" size="14"></ix-icon>
-                <span class="console-file">config_output.json</span>
-              </div>
-              <div class="console-actions" *ngIf="submittedData">
-                <button class="icon-action-btn" (click)="copyToClipboard()" [title]="copied() ? 'Copied!' : 'Copy to clipboard'">
-                  <ix-icon [name]="copied() ? 'success' : 'copy'" size="16"></ix-icon>
-                </button>
-                <button class="icon-action-btn" (click)="clearOutput()" title="Clear output">
-                  <ix-icon name="error" size="16"></ix-icon>
-                </button>
-              </div>
-            </div>
-
-            <!-- Console status bar -->
-            <div class="console-statusbar">
-              <div class="csb-left">
-                <span class="status-dot" [class.status-dot--active]="submittedData"></span>
-                <span class="csb-label">{{ submittedData ? 'EXPORT READY' : 'LISTENING…' }}</span>
-              </div>
-              <div class="csb-right" *ngIf="submittedData">
-                <span class="csb-lang">JSON</span>
-                <span class="csb-lines">{{ (submittedData | json)?.split('\n')?.length }} lines</span>
-              </div>
-            </div>
-
-            <!-- Console body -->
-            <div class="console-body">
-              <!-- Active JSON output -->
-              <div *ngIf="submittedData" class="json-pane">
-                <pre class="json-pre"><code [innerHTML]="highlightedJson()"></code></pre>
-              </div>
-
-              <!-- Empty state -->
-              <div *ngIf="!submittedData" class="console-empty">
-                <div class="empty-icon-wrap">
-                  <ix-icon name="document" size="48" class="empty-icon"></ix-icon>
-                </div>
-                <p class="empty-title">No configuration exported yet</p>
-                <p class="empty-sub">Fill in the form and click<br><strong>Generate Configuration</strong> to see the JSON output here.</p>
-                <div class="empty-hints">
-                  <div class="hint-row">
-                    <ix-icon name="checkboxes" size="14"></ix-icon>
-                    <span>Complete all required fields</span>
-                  </div>
-                  <div class="hint-row">
-                    <ix-icon name="cloud-upload" size="14"></ix-icon>
-                    <span>Submit to generate output</span>
-                  </div>
-                  <div class="hint-row">
-                    <ix-icon name="copy" size="14"></ix-icon>
-                    <span>Copy to clipboard with one click</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Console footer -->
-            <div class="console-footer">
-              <span class="cf-monospace">SIEMENS CONFIGURATOR v1.0 // {{ activeTheme() | uppercase }} MODE</span>
-              <span class="cf-monospace" *ngIf="submittedData">✓ {{ submittedData.clientName }} • {{ submittedData.deploymentLocation }}</span>
-            </div>
-          </div>
-        </div>
-
-      </form>
+  <si-card>
+    <si-card-header>
+      <h2>Deployment</h2>
+    </si-card-header>
+    <div class="form-stack">
+      <si-select [(ngModel)]="formData.deploymentLocation" name="deploymentLocation" [options]="deploymentOptions" placeholder="Deployment location"></si-select>
+      <si-select [(ngModel)]="reconfigureConnectivity" name="reconfigureConnectivity" [options]="[
+        { type: 'option', label: 'No', value: 'No' },
+        { type: 'option', label: 'Yes', value: 'Yes' }
+      ]" placeholder="Re-configure connectivity"></si-select>
+      <si-pills-input [(ngModel)]="alertRecipientEmailsPills" name="alertRecipientEmails" placeholder="Alert recipients" siPillsInputEmail></si-pills-input>
     </div>
-  </ix-content>
-</ix-application>
+  </si-card>
+
+  <si-card>
+    <si-card-header>
+      <h2>Execution summary</h2>
+    </si-card-header>
+    <div class="summary-actions">
+      <button type="button" (click)="clearOutput()">Reset</button>
+      <button type="button" (click)="onSubmit()">Generate</button>
+    </div>
+    <pre class="summary-output">{{ highlightedJson() }}</pre>
+  </si-card>
+</si-dashboard>
