@@ -1,82 +1,287 @@
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  Siemens Element — Project Configurator                            -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- ─── Application Header ─────────────────────────────────────────── -->
 <si-application-header>
-  <si-header-brand>
-    <a siHeaderLogo routerLink="/"></a>
-    <h1 class="application-name">Siemens Project Configurator</h1>
-  </si-header-brand>
-  <si-header-actions>
-    <button si-header-account-item type="button" name="Element" [siHeaderDropdownTriggerFor]="account">
-      Element
+  <!-- Brand projected into si-header-brand content slot -->
+  <a si-header-brand href="#" class="d-flex align-items-center text-decoration-none">
+    <svg class="si-logo" viewBox="0 0 32 32" width="32" height="32" aria-label="Siemens">
+      <rect width="32" height="32" rx="4" fill="#009999"/>
+      <text x="16" y="22" font-size="14" font-weight="bold" fill="white" text-anchor="middle">SI</text>
+    </svg>
+    <span class="header-app-name ms-2">Project Configurator</span>
+  </a>
+
+  <!-- Right-side header actions -->
+  <div si-header-actions class="d-flex align-items-center gap-3">
+    <span class="live-clock d-none d-md-flex align-items-center gap-1">
+      <si-icon icon="element-connect" class="text-success"></si-icon>
+      {{ currentTime }}
+    </span>
+    <button class="btn btn-outline-secondary btn-sm" (click)="toggleTheme()">
+      <si-icon [icon]="activeTheme() === 'dark' ? 'element-sun' : 'element-moon'" class="me-1"></si-icon>
+      {{ activeTheme() === 'dark' ? 'Light' : 'Dark' }}
     </button>
-  </si-header-actions>
+  </div>
 </si-application-header>
 
-<ng-template #account>
-  <si-header-dropdown>
-    <div>
-      <strong>Siemens Element</strong>
-      <div>design-system@siemens.com</div>
+<!-- ─── Page layout: sidebar + main ────────────────────────────────── -->
+<div class="app-layout">
+
+  <!-- Vertical sidebar navigation -->
+  <si-navbar-vertical [items]="navItems" class="app-sidebar">
+  </si-navbar-vertical>
+
+  <!-- ─── Main content area ─────────────────────────────────────────── -->
+  <main class="app-main">
+
+    <!-- Page heading -->
+    <div class="page-heading">
+      <div>
+        <div class="breadcrumb-row mb-1">
+          <si-icon icon="element-projects" class="text-muted me-1"></si-icon>
+          <span class="text-muted small">Projects</span>
+          <span class="text-muted small mx-1">/</span>
+          <span class="text-primary small fw-semibold">Configuration Console</span>
+        </div>
+        <h1 class="mb-1">Project Settings Console</h1>
+        <p class="text-muted mb-0">Configure and deploy your Siemens Smart Infrastructure project</p>
+      </div>
+      <span class="badge fs-6 px-3 py-2"
+            [class.bg-success]="submittedData"
+            [class.bg-secondary]="!submittedData">
+        <si-icon [icon]="submittedData ? 'element-state-tick' : 'element-clock'" class="me-1"></si-icon>
+        {{ submittedData ? 'CONFIG EXPORTED' : 'PENDING' }}
+      </span>
     </div>
-    <button si-header-dropdown-item type="button" [icon]="icons.elementUser">Profile</button>
-  </si-header-dropdown>
-</ng-template>
 
-<si-dashboard [heading]="'Project cockpit'" [enableExpandInteractions]="true">
-  <si-menu slot="menu">
-    <si-menu-item [icon]="icons.elementDashboard" label="Dashboard"></si-menu-item>
-    <si-menu-item [icon]="icons.elementProject" label="Projects"></si-menu-item>
-    <si-menu-item [icon]="icons.elementAlarm" label="Alerts" [badge]="3"></si-menu-item>
-    <si-menu-item [icon]="icons.elementSettings" label="Settings"></si-menu-item>
-  </si-menu>
-
-  <si-dashboard-card [title]="'Configuration status'">
-    <div class="metric">{{ submittedData ? 'Ready' : 'Pending' }}</div>
-  </si-dashboard-card>
-
-  <si-dashboard-card [title]="'Environment'">
-    <div class="metric">{{ currentTime }}</div>
-  </si-dashboard-card>
-
-  <si-dashboard-card [title]="'Project'">
-    <div class="metric">{{ formData.clientName || 'No client selected' }}</div>
-  </si-dashboard-card>
-
-  <si-dashboard-card [title]="'Deploy'">
-    <div class="metric">{{ submittedData ? 'Generated' : 'Waiting' }}</div>
-  </si-dashboard-card>
-
-  <si-card>
-    <si-card-header>
-      <h2>Project identification</h2>
-    </si-card-header>
-    <div class="form-stack">
-      <si-pills-input [(ngModel)]="clientNamePills" name="clientName" placeholder="Client name"></si-pills-input>
-      <si-pills-input [(ngModel)]="projectNamePills" name="projectName" placeholder="Project name"></si-pills-input>
-      <si-pills-input [(ngModel)]="commissionerEmailPills" name="commissionerEmail" placeholder="Commissioner email" siPillsInputEmail></si-pills-input>
+    <!-- ─── KPI strip (Bootstrap row of si-cards) ────────────────────── -->
+    <div class="row g-3 kpi-strip">
+      <div class="col">
+        <si-card class="kpi-card h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <si-icon icon="element-state-tick" class="text-success"></si-icon>
+            <span class="small text-muted">Configuration</span>
+          </div>
+          <div class="kpi-value" [class.text-success]="submittedData" [class.text-muted]="!submittedData">
+            {{ submittedData ? 'Exported' : 'In Progress' }}
+          </div>
+        </si-card>
+      </div>
+      <div class="col">
+        <si-card class="kpi-card h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <si-icon icon="element-cloud" class="text-primary"></si-icon>
+            <span class="small text-muted">Environment</span>
+          </div>
+          <div class="kpi-value text-primary">{{ formData.deploymentLocation || '—' }}</div>
+        </si-card>
+      </div>
+      <div class="col">
+        <si-card class="kpi-card h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <si-icon icon="element-projects" class="text-warning"></si-icon>
+            <span class="small text-muted">Active Project</span>
+          </div>
+          <div class="kpi-value text-warning">{{ formData.projectName || 'Unnamed' }}</div>
+        </si-card>
+      </div>
+      <div class="col">
+        <si-card class="kpi-card h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <si-icon icon="element-user" class="text-info"></si-icon>
+            <span class="small text-muted">Client</span>
+          </div>
+          <div class="kpi-value text-info">{{ formData.clientName || '—' }}</div>
+        </si-card>
+      </div>
+      <div class="col">
+        <si-card class="kpi-card h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <si-icon icon="element-upload" class="text-secondary"></si-icon>
+            <span class="small text-muted">Deploy Ready</span>
+          </div>
+          <div class="kpi-value" [class.text-success]="submittedData" [class.text-muted]="!submittedData">
+            {{ submittedData ? 'Yes' : 'No' }}
+          </div>
+        </si-card>
+      </div>
     </div>
-  </si-card>
 
-  <si-card>
-    <si-card-header>
-      <h2>Deployment</h2>
-    </si-card-header>
-    <div class="form-stack">
-      <si-select [(ngModel)]="formData.deploymentLocation" name="deploymentLocation" [options]="deploymentOptions" placeholder="Deployment location"></si-select>
-      <si-select [(ngModel)]="reconfigureConnectivity" name="reconfigureConnectivity" [options]="[
-        { type: 'option', label: 'No', value: 'No' },
-        { type: 'option', label: 'Yes', value: 'Yes' }
-      ]" placeholder="Re-configure connectivity"></si-select>
-      <si-pills-input [(ngModel)]="alertRecipientEmailsPills" name="alertRecipientEmails" placeholder="Alert recipients" siPillsInputEmail></si-pills-input>
-    </div>
-  </si-card>
+    <!-- ─── Two-column grid: form + console ─────────────────────────── -->
+    <form #configForm="ngForm" (ngSubmit)="onSubmit(configForm)" novalidate class="main-grid">
 
-  <si-card>
-    <si-card-header>
-      <h2>Execution summary</h2>
-    </si-card-header>
-    <div class="summary-actions">
-      <button type="button" (click)="clearOutput()">Reset</button>
-      <button type="button" (click)="onSubmit()">Generate</button>
-    </div>
-    <pre class="summary-output">{{ highlightedJson() }}</pre>
-  </si-card>
-</si-dashboard>
+      <!-- ════ LEFT: Form Cards ═══════════════════════════════════════ -->
+      <div class="col-form">
+
+        <!-- Card 1: Project Identification -->
+        <si-card>
+          <si-card-header>
+            <si-icon icon="element-user" class="me-2 text-primary"></si-icon>
+            Project Identification
+          </si-card-header>
+          <div class="card-body-padding">
+            <si-form-container>
+              <si-form-item label="Client name" [required]="true">
+                <input
+                  class="form-control"
+                  id="clientName"
+                  name="clientName"
+                  [(ngModel)]="formData.clientName"
+                  required
+                  placeholder="e.g. Siemens AG">
+              </si-form-item>
+
+              <si-form-item label="Project name" [required]="true">
+                <input
+                  class="form-control"
+                  id="projectName"
+                  name="projectName"
+                  [(ngModel)]="formData.projectName"
+                  required
+                  placeholder="e.g. MindSphere Portal V5">
+              </si-form-item>
+            </si-form-container>
+          </div>
+        </si-card>
+
+        <!-- Card 2: Connectivity & Deployment -->
+        <si-card>
+          <si-card-header>
+            <si-icon icon="element-cloud-upload" class="me-2 text-success"></si-icon>
+            Connectivity &amp; Deployment
+          </si-card-header>
+          <div class="card-body-padding">
+            <si-form-container>
+              <si-form-item label="Deployment location" [required]="true">
+                <si-select
+                  name="deploymentLocation"
+                  [(ngModel)]="formData.deploymentLocation"
+                  [options]="locationOptions"
+                  placeholder="Select a region…"
+                  required>
+                </si-select>
+              </si-form-item>
+
+              <si-form-item label="Re-configure connectivity?">
+                <si-select
+                  name="reconfigureConnectivity"
+                  [(ngModel)]="formData.reconfigureConnectivity"
+                  [options]="connectivityOptions">
+                </si-select>
+              </si-form-item>
+            </si-form-container>
+          </div>
+        </si-card>
+
+        <!-- Card 3: Alerting & Communication -->
+        <si-card>
+          <si-card-header>
+            <si-icon icon="element-alarm" class="me-2 text-warning"></si-icon>
+            Alerting &amp; Communication
+          </si-card-header>
+          <div class="card-body-padding">
+            <si-form-container>
+              <si-form-item label="Commissioner email" [required]="true">
+                <input
+                  class="form-control"
+                  id="commissionerEmail"
+                  name="commissionerEmail"
+                  type="email"
+                  [(ngModel)]="formData.commissionerEmail"
+                  required
+                  email
+                  placeholder="commissioner@siemens.com">
+              </si-form-item>
+
+              <si-form-item label="Alert recipients">
+                <input
+                  class="form-control"
+                  id="alertRecipientEmails"
+                  name="alertRecipientEmails"
+                  [(ngModel)]="formData.alertRecipientEmails"
+                  placeholder="email1@example.com, email2@example.com">
+                <div class="form-text">Comma-separated. Leave blank to disable.</div>
+              </si-form-item>
+            </si-form-container>
+          </div>
+        </si-card>
+
+        <!-- Action row -->
+        <div class="action-row">
+          <button type="button" class="btn btn-outline-secondary" (click)="clearOutput()">
+            <si-icon icon="element-delete" class="me-1"></si-icon>
+            Reset
+          </button>
+          <si-loading-button
+            type="submit"
+            [disabled]="!configForm.form.valid"
+            buttonClass="btn btn-primary">
+            <si-icon icon="element-cloud-upload" class="me-2"></si-icon>
+            Generate Config
+          </si-loading-button>
+        </div>
+      </div>
+
+      <!-- ════ RIGHT: Console Output ══════════════════════════════════ -->
+      <div class="col-console">
+        <div class="console-card">
+          <!-- macOS-style titlebar -->
+          <div class="console-top">
+            <div class="traffic-lights">
+              <span class="tl tl-red"></span>
+              <span class="tl tl-yellow"></span>
+              <span class="tl tl-green"></span>
+            </div>
+            <div class="console-path">
+              <si-icon icon="element-file" class="me-1"></si-icon>
+              <span class="console-file">config_output.json</span>
+            </div>
+            <div class="console-actions" *ngIf="submittedData">
+              <button type="button" class="icon-btn" (click)="copyToClipboard()" [title]="copied() ? 'Copied!' : 'Copy'">
+                <si-icon [icon]="copied() ? 'element-state-tick' : 'element-copy'"></si-icon>
+              </button>
+              <button type="button" class="icon-btn" (click)="clearOutput()" title="Clear">
+                <si-icon icon="element-delete"></si-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Status bar -->
+          <div class="console-statusbar">
+            <div class="csb-left">
+              <span class="status-dot" [class.status-dot--active]="submittedData"></span>
+              <span>{{ submittedData ? 'EXPORT READY' : 'LISTENING…' }}</span>
+            </div>
+            <span *ngIf="submittedData" class="csb-lang">JSON</span>
+          </div>
+
+          <!-- Body -->
+          <div class="console-body">
+            <div *ngIf="submittedData" class="json-pane">
+              <pre class="json-pre"><code [innerHTML]="highlightedJson()"></code></pre>
+            </div>
+
+            <div *ngIf="!submittedData" class="console-empty">
+              <si-icon icon="element-file" class="empty-icon"></si-icon>
+              <p class="empty-title">No configuration exported yet</p>
+              <p class="empty-sub">Fill in the form and click <strong>Generate Config</strong></p>
+              <si-inline-notification
+                severity="info"
+                message="Complete all required fields and submit">
+              </si-inline-notification>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="console-footer">
+            <span>SIEMENS CONFIGURATOR v1.0 // {{ activeTheme() | uppercase }} MODE</span>
+            <span *ngIf="submittedData">✓ {{ submittedData.clientName }} • {{ submittedData.deploymentLocation }}</span>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </main>
+</div>
