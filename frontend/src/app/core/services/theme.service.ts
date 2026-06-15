@@ -15,6 +15,7 @@ export class ThemeService {
       const theme = this.activeThemeSignal();
       document.documentElement.setAttribute('data-ix-theme', 'classic');
       document.documentElement.setAttribute('data-ix-color-schema', theme);
+      document.documentElement.setAttribute('data-element-theme', theme);
     });
 
     // Load initial preference
