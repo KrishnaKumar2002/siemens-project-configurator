@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: siemens-project-settings
+  labels:
+    app.kubernetes.io/name: siemens-settings
+    app.kubernetes.io/part-of: settings-console

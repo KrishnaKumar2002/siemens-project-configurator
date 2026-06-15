@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: siemens-settings-web
+  namespace: siemens-project-settings
+  labels:
+    app: siemens-settings-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: siemens-settings-web
+  template:
+    metadata:
+      labels:
+        app: siemens-settings-web
+    spec:
+      containers:
+        - name: frontend
+          image: siemens-project-settings:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          livenessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 5

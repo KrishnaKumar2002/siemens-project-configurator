@@ -1,0 +1,17 @@
+
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: siemens-project-settings:latest
+    container_name: siemens-settings-web
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: siemens-settings-service
+  namespace: siemens-project-settings
+  labels:
+    app: siemens-settings-web
+spec:
+  selector:
+    app: siemens-settings-web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      name: http
+  type: ClusterIP
